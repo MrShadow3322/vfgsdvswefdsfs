@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Marketplace</title>
+  <style>
+    /* Добавьте стили из предыдущей версии сюда */
+  </style>
+</head>
+<body>
+  <header class="header">
+    <h1>Marketplace</h1>
+  </header>
+  <nav class="nav">
+    <a href="javascript:void(0);" id="main-link" onclick="showPage('main')">Главная</a>
+    <a href="javascript:void(0);" id="search-link" onclick="showPage('search')">Поиск</a>
+    <a href="javascript:void(0);" id="profile-link" onclick="showPage('profile')">Профиль</a>
+  </nav>
+  <main class="content">
+    <!-- Главная -->
+    <section id="main" class="page">
+      <h2>Добро пожаловать на Marketplace</h2>
+      <div class="buttons">
+        <div class="button" onclick="showCategories()">Категории</div>
+        <div class="button" onclick="openAllProducts()">Все товары</div>
+      </div>
+      <div class="categories" id="categories" style="display: none;">
+        <div class="category" onclick="openCategoryPage('home')">Для дома</div>
+        <div class="category" onclick="openCategoryPage('tech')">Техника</div>
+        <div class="category" onclick="openCategoryPage('clothes')">Одежда</div>
+      </div>
+      <button class="seller-button" onclick="openSellerForm()">Стать продавцом</button>
+    </section>
+    <!-- Поиск -->
+    <section id="search" class="page" style="display: none;">
+      <h2>Поиск товаров</h2>
+      <div class="search-bar">
+        <input type="text" id="search-input" placeholder="Введите запрос для поиска" oninput="searchProducts()">
+      </div>
+      <div id="search-results" class="search-results"></div>
+    </section>
+    <!-- Профиль -->
+    <section id="profile" class="page" style="display: none;">
+      <h2>Профиль</h2>
+      <p>Ваш уникальный ID: <span id="user-id"></span></p>
+    </section>
+  </main>
+  <footer class="footer">
+    Marketplace © 2024
+  </footer>
+  <script>
+    const CHAT_ID = '1258306425';
+    const BOT_TOKEN = '7262467632:AAGv2FmMkHDcQKzYSLbw1VNtdapGi1pAw40';
+
+    const categories = {
+      'home': [
+        { id: 1, title: 'Уютный диван', description: 'Мягкий и удобный диван.', price: 1200 },
+        { id: 2, title: 'Стол', description: 'Комплект мебели.', price: 2000 }
+      ],
+      'tech': [
+        { id: 3, title: 'Смартфон', description: 'Мощный и компактный.', price: 500 },
+        { id: 4, title: 'Ноутбук', description: 'Современный и лёгкий.', price: 1200 },
+      ],
+      'clothes': [{ id: 5, title: 'Куртка', description: 'Классическая.', price: 40 }],
+    };
+
+    // Уникальный ID
+    function getUserId() {
+      let userId = localStorage.getItem('userId');
+      if (!userId) {
+        userId = 'USER-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+        localStorage.setItem('userId', userId);
+      }
+      return userId;
+    }
+
+    document.getElementById('user-id').textContent = getUserId();
+
+    // Переключение страниц
+    function showPage(pageId) {
+      document.querySelectorAll(".page").forEach(page => {
+        page.style.display = "none";
+      });
+      document.getElementById(pageId).style.display = "block";
+      document.querySelectorAll(".nav a").forEach(link => {
+        link.classList.remove('active');
+      });
+      document.getElementById(pageId + "-link").classList.add('active');
+    }
+
+    // Показ категорий
+    function showCategories() {
+      const categories = document.getElementById('categories');
+      categories.style.display = categories.style.display === 'none' ? 'flex' : 'none';
+    }
+
+    // Страница категории
+    function openCategoryPage(category) {
+      const items = categories[category];
+      const html = items.map(item => `
+        <div class="search-result">
+          <h3>${item.title}</h3>
+          <p>${item.description}</p>
+          <p>Цена: ${item.price} ₽</p>
+        </div>`).join('');
+      openNewPage(html);
+    }
+
+    // Все товары
+    function openAllProducts() {
+      const allItems = Object.values(categories).flat();
+      const html = allItems.map(item => `
+        <div class="search-result">
+          <h3>${item.title}</h3>
+          <p>${item.description}</p>
+          <p>Цена: ${item.price} ₽</p>
+        </div>`).join('');
+      openNewPage(html);
+    }
+
+    // Открытие новой страницы
+    function openNewPage(content) {
+      const newWindow = window.open('', '_blank');
+      newWindow.document.write(`
+        <html>
+        <head>
+          <title>Товары</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 20px; background-color: #1a1d2e; color: white; }
+            .search-result { background-color: #2e3140; padding: 15px; border-radius: 10px; margin-bottom: 20px; }
+          </style>
+        </head>
+        <body>${content}</body>
+        </html>
+      `);
+      newWindow.document.close();
+    }
+
+    // Поиск
+    function searchProducts() {
+      const query = document.getElementById('search-input').value.toLowerCase();
+      const allItems = Object.values(categories).flat();
+      const results = allItems.filter(item => item.title.toLowerCase().includes(query));
+      const resultsContainer = document.getElementById('search-results');
+      resultsContainer.innerHTML = results.map(item => `
+        <div class="search-result">
+          <h3>${item.title}</h3>
+          <p>${item.description}</p>
+          <p>Цена: ${item.price} ₽</p>
+        </div>`).join('');
+    }
+
+    // Кнопка "Стать продавцом"
+    function openSellerForm() {
+      const sellerFormHtml = `
+        <h2>Стать продавцом</h2>
+        <form onsubmit="submitSellerForm(event)">
+          <label>Ваш номер телефона:</label><br>
+          <input type="text" id="phone" required><br><br>
+          <label>Описание ваших товаров:</label><br>
+          <textarea id="description" required></textarea><br><br>
+          <label>Товары:</label><br>
+          <textarea id="products" required></textarea><br><br>
+          <button type="submit">Отправить заявку</button>
+        </form>`;
+      openNewPage(sellerFormHtml);
+    }
+
+    function submitSellerForm(event) {
+      event.preventDefault();
+      const phone = event.target.querySelector('#phone').value;
+      const description = event.target.querySelector('#description').value;
+      const products = event.target.querySelector('#products').value;
+      alert('Заявка отправлена!');
+      // Можно отправить данные через бота Telegram
+    }
+  </script>
+</body>
+</html>
